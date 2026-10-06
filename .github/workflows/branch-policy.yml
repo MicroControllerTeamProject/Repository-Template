@@ -1,21 +1,30 @@
-name: Validate Source Branch
+name: Branch Policy
 
 on:
   pull_request:
     branches:
-      - main
+      - master
+
+permissions:
+  contents: read
 
 jobs:
   validate-source-branch:
+    name: Validate source branch
     runs-on: ubuntu-latest
+
     steps:
-      - name: Allow only release to main
+      - name: Allow only release branches into master
         shell: bash
         run: |
-          if [ "${{ github.head_ref }}" != "release" ]; then
-            echo "Pull requests to main are allowed only from the release branch."
-            echo "Current source branch: ${{ github.head_ref }}"
+          SOURCE_BRANCH="${{ github.head_ref }}"
+          TARGET_BRANCH="${{ github.base_ref }}"
+
+          echo "Pull request: $SOURCE_BRANCH -> $TARGET_BRANCH"
+
+          if [[ "$SOURCE_BRANCH" != release/* ]]; then
+            echo "::error::Only release/* branches can be merged into master."
             exit 1
           fi
 
-          echo "Valid source branch: release"
+          echo "Branch policy passed."
