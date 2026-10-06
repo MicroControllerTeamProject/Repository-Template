@@ -1,1 +1,0 @@
-recipe.hooks.prebuild.9.pattern=cmd.exe /c "{build.project_path}\build-tools\GenerateGitVersion.bat" "{build.path}"
