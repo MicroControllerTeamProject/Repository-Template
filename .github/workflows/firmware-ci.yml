@@ -1,0 +1,74 @@
+name: Firmware CI
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+      - 'release/**'
+
+  push:
+    branches:
+      - develop
+      - main
+      - 'release/**'
+
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# -------------------------------------------------------------------
+# Project configuration
+# Adapt these values when a repository is created from this template.
+# -------------------------------------------------------------------
+env:
+  FIRMWARE_PATH: firmware
+  ARDUINO_CORE: arduino:avr
+  FQBN: arduino:avr:nano
+  SHARED_LIBRARIES_REPOSITORY: MicroControllerTeamProject/libraries
+  SHARED_LIBRARIES_REF: develope
+
+jobs:
+  firmware-build:
+    name: Build firmware
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout firmware repository
+        uses: actions/checkout@v4
+
+      - name: Checkout shared libraries
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ env.SHARED_LIBRARIES_REPOSITORY }}
+          ref: ${{ env.SHARED_LIBRARIES_REF }}
+          path: external-libraries
+
+      - name: Set up Arduino CLI
+        uses: arduino/setup-arduino-cli@v2
+
+      - name: Install Arduino core
+        run: |
+          arduino-cli core update-index
+          arduino-cli core install "${ARDUINO_CORE}"
+
+      - name: Prepare firmware libraries
+        run: |
+          mkdir -p ci-libraries
+
+          # Add here only the libraries required by this firmware.
+          # Example:
+          # cp -r external-libraries/MyLibrary ci-libraries/
+
+      - name: Create CI GitVersion.h
+        run: |
+          echo '#pragma once' > "${FIRMWARE_PATH}/GitVersion.h"
+          echo '#define GIT_VERSION "CI"' >> "${FIRMWARE_PATH}/GitVersion.h"
+
+      - name: Compile firmware
+        run: |
+          arduino-cli compile \
+            --fqbn "${FQBN}" \
+            --libraries "${GITHUB_WORKSPACE}/ci-libraries" \
+            "${GITHUB_WORKSPACE}/${FIRMWARE_PATH}"
