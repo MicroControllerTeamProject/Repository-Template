@@ -1,0 +1,3 @@
+# Generated firmware version header
+firmware/GitVersion.h
+firmware/GitVersion.tmp
