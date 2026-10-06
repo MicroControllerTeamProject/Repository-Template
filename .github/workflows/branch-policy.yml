@@ -3,7 +3,7 @@ name: Branch Policy
 on:
   pull_request:
     branches:
-      - master
+      - main
 
 permissions:
   contents: read
@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Allow only release branches into master
+      - name: Allow only release branches into main
         shell: bash
         run: |
           SOURCE_BRANCH="${{ github.head_ref }}"
@@ -23,7 +23,7 @@ jobs:
           echo "Pull request: $SOURCE_BRANCH -> $TARGET_BRANCH"
 
           if [[ "$SOURCE_BRANCH" != release/* ]]; then
-            echo "::error::Only release/* branches can be merged into master."
+            echo "::error::Only release/* branches can be merged into main."
             exit 1
           fi
 
